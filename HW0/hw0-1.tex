@@ -1,0 +1,590 @@
+\documentclass[12pt, fullpage,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{xcolor}
+%\usepackage{color}
+
+\newcommand{\semester}{Spring 2022}
+\newcommand{\assignmentId}{0}
+\newcommand{\releaseDate}{10 Jan, 2022}
+\newcommand{\dueDate}{11:59pm, 21 Jan, 2022}
+
+\newtheorem{solution}{Solution}
+
+\newcommand{\bx}{{\bf x}}
+\newcommand{\bw}{{\bf w}}
+
+\newenvironment{changemargin}[2]{\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{0pt}%
+\setlength{\rightmargin}{0pt}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{0pt plus 1pt}%
+\addtolength{\leftmargin}{#1}%
+\addtolength{\rightmargin}{#2}%
+}\item }{\end{list}}
+
+\def\red{\color{red}}
+\def\blue{\color{blue}}
+\def\blackblue{\color{black!40!blue}}
+
+\title{CS 6190: Probabilistic Machine Learning \semester}
+\author{Solutions to Homework \assignmentId\\
+by: \textcolor{red}{Meysam Alishahi} \\ 
+\textcolor{red}{(UNID: u01323606)}
+}
+\date{Handed out: \releaseDate\\
+  Due: \dueDate}
+
+\begin{document}
+\maketitle
+
+\input{emacscomm}
+\footnotesize
+	\begin{itemize}
+		\item You are welcome to talk to other members of the class about
+		the homework. I am more concerned that you understand the
+		underlying concepts. However, you should write down your own
+		solution. Please keep the class collaboration policy in mind.
+		
+		\item Feel free discuss the homework with the instructor or the TAs.
+		
+		\item Your written solutions should be brief and clear. You need to
+		show your work, not just the final answer, but you do \emph{not}
+		need to write it in gory detail. Your assignment should be {\bf no
+			more than 10 pages}. Every extra page will cost a point.
+		
+		\item Handwritten solutions will not be accepted.
+		
+		\item The homework is due by \textbf{midnight of the due date}. Please submit
+		the homework on Canvas.
+	\end{itemize}
+
+
+
+\section*{Warm up[100 points + 5 bonus]}	
+\label{sec:q1}
+
+%independency, conditional distribution, expectation, variance, basic properties
+%gradient calcualtion, logistic function, second derivatives
+%
+\begin{enumerate}
+%\item~[5 points] We use sets to represent events. For example, toss a fair coin $5$ times, and the event can be represented by the set of ``Heads" or ``Tails" after each tossing. Let a specific event $A$ be ``at least one head after tossing $5$ times". Calculate the probability that event $A$ happens, i.e., $p(A)$.
+
+
+\item~[2 points] Given two events $A$ and $B$, prove that 
+\begin{align}
+&p(A \cup B) \le p(A) + p(B) \nonumber \\
+&p(A \cap B) \le p(A), p(A \cap B) \le p(B) \nonumber
+\end{align}
+When does the equality hold?
+
+{\blackblue In view of the third probability Axiom, known as the assumption of $\sigma$-additivity, we have 
+\begin{align}\label{q1}
+p(A\cup B) = P(A\setminus B) +  P(B) \qquad\qquad \mbox{and}\qquad\qquad p(A) = p(A\setminus B) + p(A\cap B)
+\end{align}
+since  $(A\setminus B)\cap B = \varnothing$ and $(A\setminus B)\cap B=\varnothing$.  
+Since $p(B)$ is non-negative, these equalities imply 
+\begin{align*}
+p(A\cup B) 
+& =  p(A\setminus B) +  p(B)\\
+& = p(A) - p(A\cap B)  + p(B)\\
+& \leq  p(A) + p(B).
+\end{align*}
+To have the equality,  we need $p(A) - p(A\cap B)  + p(B) = p(A) + p(B)$ which concludes $p(A\cap B) = 0$. 
+In particular, when $A\cap B = \varnothing$ we have the equlity. 
+
+
+In view of the second equality in Equality~(\ref{q1}), 
+\begin{align*}
+p(A\cap B) &= p(A) - p(A\setminus B)\\
+		 & \leq p(A).
+\end{align*}
+Again, to have the equality, we should have  $p(A) - p(A\setminus B) = p(A)$ or equivalently, $p(A\setminus B)= 0$. In particular, when $A\subseteq B$, the equality holds.
+With a similar approach, we can prove $p(A\cap B)\leq p(B)$ and for which the equality holds if and only if $p(B\setminus A)= 0$. In particular, when $B\subseteq A$, we have the equality.
+}
+\item~[2 points] Let $\{A_1, \ldots, A_n\}$ be a collection of events. Show that
+\[
+p(\cup_{i=1}^n A_i) \le \sum_{i=1}^n p(A_i).
+\]
+When does the equality hold? (Hint: induction)\\
+{\blackblue We are going to prove the following statement:
+
+\begin{changemargin}{1cm}{1cm}
+\noindent{\it If $\{A_1, \ldots, A_n\}$ are a collection of events, then
+$p(\cup_{i=1}^n A_i) \le \sum_{i=1}^n p(A_i)$
+and equality holds if and only if $p(A_i\cap A_j)=0$ for each $i\neq j\in\{1,\ldots,n\}$.
+In particular, if $A_1, \ldots, A_n$ are pairwise disjoint, i.e., $A_i\cap A_j=\varnothing$ for each $i\neq j\in\{1,\ldots,n\}$, then we have the equality. }
+\end{changemargin} 
+{\noindent \bf Proof.}
+The induction base ($n=2$) is holding due to Exercise  1. Assume that the statement is true for $n=k\geq 2$ and we want to prove it for $n = k+1$. 
+Set $A = \cup_{i=1}^k A_i$ and $B=A_{k+1}$. By induction base and hypothesis, we have 
+\begin{align*}
+p(\cup_{i=1}^n A_i) 
+& =  p(A\cup B)\\
+&\leq p(A) + p(B)\\
+& = p(\cup_{i=1}^k A_i) + p(A_{k+1})\\
+&\leq \sum_{i=1}^k p(A_i) +  p(A_{k+1}).
+\end{align*}
+To have the equality, we should have 
+$$ p(A\cup B) = p(A) + p(B)\qquad\qquad \mbox{and} \qquad\qquad p(\cup_{i=1}^k A_i) = \sum_{i=1}^k p(A_i).$$
+Again using induction base, we conclude 
+$p((\cup_{i=1}^k A_i)\cap A_{k+1})= 0,$ which implies $p(A_i\cap A_{k+1})=0$ for each $i\in\{1,\cdots,k\}$. 
+Also, from the induction hypothesis, since $p(\cup_{i=1}^k A_i) = \sum_{i=1}^k p(A_i),$
+we got 
+$$p(A_i\cap A_j)=0 \quad \mbox{for each $i\neq j\in \{1,\dots,k\}.$}$$
+Overall,  we proved that 
+if $p(\cup_{i=1}^{k+1} A_i) = \sum_{i=1}^{k+1} p(A_i),$
+then
+$$p(A_i\cap A_j)=0 \quad \mbox{for each $i\neq j\in \{1,\dots,k+1\}$}.$$
+}
+
+%\item~[5 points] Given three events $A$, $B$ and $C$, show that
+%\[
+%p(A\cap B\cap C) = p(A|B\cap C)p(B|C)p(C)
+%\]
+\item~[14 points]  We use $\EE(\cdot)$ and $\VV(\cdot)$ to denote a random variable's mean (or expectation) and variance, respectively. Given two discrete random variables $X$ and $Y$, where $X \in \{0, 1\}$ and $Y \in \{0,1\}$. The joint probability $p(X,Y)$ is given in as follows:
+\begin{table}[h]
+        \centering
+        \begin{tabular}{ccc}
+        \hline\hline
+         & $Y=0$ & $Y=1$ \\ \hline
+         $X=0$ & $3/10$ & $1/10$ \\ \hline
+         $X=1$  & $2/10$ & $4/10$ \\ \hline\hline
+        \end{tabular}
+        %\caption{Training data for the alien invasion problem.}\label{tb-alien-train}
+        \end{table}
+	
+        \begin{enumerate}
+            \item~[10 points] Calculate the following distributions and statistics. 
+            \begin{enumerate}
+            \item the the marginal distributions $p(X)$ and $p(Y)$
+            {\blackblue             
+            
+            \noindent Marginal distributions $p(X)$:
+            $$p(X=0) = p(X=0, Y=0) + p(X=0, Y=1) = 3/10+1/10 = 4/10$$
+            $$p(X=1) = p(X=1, Y=0) + p(X=1, Y=1) = 2/10+4/10 = 6/10$$
+            
+            \noindent Marginal distributions $p(Y)$:
+            $$p(Y=0) = p(X=0, Y=0) + p(X=1, Y=0) = 3/10+2/10 = 5/10$$
+            $$p(Y=1) = p(X=0, Y=1) + p(X=0, Y=1) = 1/10+4/10 = 5/10$$
+            }
+            \item the conditional distributions $p(X|Y)$ and $p(Y|X)$
+             {\blackblue  
+             \noindent Conditional distributions $p(X|Y)$:
+             $$p(X=0|Y=0) =3/5 \qquad \qquad \mbox{and}\qquad\qquad p(X=1|Y=0) = 2/5$$
+             $$p(X=0|Y=1) =1/5 \qquad \qquad \mbox{and}\qquad\qquad p(X=1|Y=1) = 4/5$$
+             $$p(Y=0|X=0) =3/4 \qquad \qquad \mbox{and}\qquad\qquad p(Y=1|X=0) =1/4 $$
+             $$p(Y=0|X=1) =1/3 \qquad \qquad \mbox{and}\qquad\qquad p(Y=1|X=1) = 2/3$$
+            }
+            \item $\EE(X)$, $\EE(Y)$, $\VV(X)$, $\VV(Y)$\\
+            {\blackblue  
+             \noindent 
+             $$\EE(X) = 0.6  \qquad \qquad \mbox{and}\qquad\qquad  \EE(Y) = 0.5$$
+             $$\VV(X) = \EE(X^2) - \EE(X)^2 = 0.6 - 0.36 = 0.24$$ 
+             $$\VV(X) = \EE(Y^2) - \EE(Y)^2 = 0.5 - 0.25 = 0.25$$
+             }
+            \item  $\EE(Y|X=0)$, $\EE(Y|X=1)$,  $\VV(Y|X=0)$, $\VV(Y|X=1)$ \\
+            {\blackblue  
+             \noindent 
+             $$\EE(Y|X=0) = 1/4 \qquad \qquad \mbox{and}\qquad\qquad \EE(Y|X=1) = 2/3$$
+             $$\VV(Y|X=0) = \EE(Y^2|X=0) - \EE(Y|X=0)^2 = 1/4 - 1/16 = 3/16$$
+             $$\VV(Y|X=1) = \EE(Y^2|X=1) - \EE(Y|X=1)^2 = 2/3 - 4/9 = 2/9$$
+            }
+            \item  the covariance between $X$ and $Y$\\
+            {\blackblue  
+             \noindent 
+             $$cov(X,Y) = \EE(XY) - \EE(X)\EE(Y) = 0.4 - 0.6 \times 0.5 = 0.37$$ 
+             }
+            \end{enumerate}
+            \item~[2 points] Are $X$ and $Y$ independent? Why?
+            {\blackblue  
+             \noindent No, since $$0.3 = p(X=0,Y=0)  \neq p(X=0)p(Y=0) = 0.4\times 0.5 = 0.2$$}
+      
+            \item~[2 points] When $X$ is not assigned a specific value, are $\EE(Y|X)$ and $\VV(Y|X)$ still constant? Why?
+            {\blackblue  
+             \noindent No, since $X$ and $Y$ are not independent, $\EE(Y|X)$ and $\VV(Y|X)$ are both functions of $X$ and therefore, they are two random variables depending on $X$. 
+            }
+            
+        \end{enumerate}
+\item~[9 points] Assume a random variable $X$ follows a standard normal distribution, \ie $X \sim \N(X|0, 1)$. Let $Y = e^{-X^2}$. Calculate the mean and variance of $Y$.
+\begin{enumerate}
+	\item $\EE(Y)$\\
+	{\blackblue  
+	Note that if $Z \sim \N(Z|\mu, \sigma)$, then the probability density function of $Z$ is 
+	$f_Z(z) = {1\over \sigma\sqrt{2\pi}}e^{-{(z-\mu)^2\over 2\sigma^2}}.$
+	\begin{align*}
+	\EE(Y) 
+	& = \int_{-\infty}^{+\infty}e^{-X^2}{1\over \sqrt{2\pi}}e^{-{X^2\over 2}}dx\\
+	& = {1\over \sqrt{3}}\int_{-\infty}^{+\infty}{1\over {1\over \sqrt{3}}\sqrt{2\pi}}e^{-{X^2\over 2/3}}dx\\
+	& = {1\over \sqrt{3}}\times 1 = {1\over \sqrt{3}}.
+	\end{align*}
+	Note that $g_X(x) = {1\over {1\over \sqrt{3}}\sqrt{2\pi}}e^{-{x^2\over 2/3}}$ is the probability density function of  $\N(X|0, 1/\sqrt{3})$ and thus $\int_{-\infty}^{+\infty}{1\over {1\over \sqrt{3}}\sqrt{2\pi}}e^{-{X^2\over 2/3}}dx =1 $.
+	}
+	
+	\item $\VV(Y)$\\
+	{\blackblue To compute $\VV(Y)= \EE(Y^2) - \EE(Y)^2$, we need to know $\EE(Y^2)$. Lets compute it,
+	\begin{align*}
+	\EE(Y^2) 
+	& = \int_{-\infty}^{+\infty}e^{-2X^2}{1\over \sqrt{2\pi}}e^{-{X^2\over 2}}dx\\
+	& = {1\over \sqrt{5}}\int_{-\infty}^{+\infty}{1\over {1\over \sqrt{5}}\sqrt{2\pi}}e^{-{X^2\over 2/5}}dx\\
+	& = {1\over \sqrt{5}}\times 1 = {1\over \sqrt{5}}.
+	\end{align*}
+	Therefore, 
+	$$\VV(Y) = \EE(Y^2) - \EE(Y)^2 = {1\over \sqrt{5}} -({1\over \sqrt{3}})^2 = {1\over \sqrt{5}} - {1\over 3}$$
+
+	}
+	\item $\text{cov}(X, Y)$\\
+	{\blackblue\noindent We know that $\text{cov}(X, Y)=\EE(XY) - \EE(X)\EE(Y)$.
+	As we know  $\EE(X) = 0$ and $\EE(Y)= {1\over \sqrt{3}}$, to compute \text{cov}(X, Y), it suffices to know the value of $\EE(XY)$.
+	\begin{align*}
+	\EE(XY) 
+	& = \int_{-\infty}^{+\infty}Xe^{-X^2}{1\over \sqrt{2\pi}}e^{-{X^2\over 2}}dx\\
+	& = {1\over \sqrt{3}}\int_{-\infty}^{+\infty}X{1\over {1\over \sqrt{3}}\sqrt{2\pi}}e^{-{X^2\over 2/3}}dx\\
+	& = {1\over \sqrt{3}}\EE(X)\qquad\mbox{where $X\sim \N(X|0, 1/\sqrt{3})$}\\
+	& = 0.
+	\end{align*}
+	Therefore, 
+	$\text{cov}(X, Y)=\EE(XY) - \EE(X)\EE(Y) = 0 - 0\times  {1\over \sqrt{3}} = 0.$
+	}
+\end{enumerate}
+
+\item~[8 points] Derive the probability density functions of the following transformed random variables. 
+\begin{enumerate}
+	\item $X \sim \N(X|0, 1)$ and $Y = X^3$.\\
+	{\blackblue\noindent 
+	We remind that if $X \sim f(X)$, then by changing the variable $X = g(Y)$ where $g$ is monotonic function,  $Y\sim g'(Y) f(g(Y))$.
+	Therefore, since here $g(Y) = Y^{1/3}$ and $X\sim \frac{1}{\sqrt{2\pi}}e^{-\frac{X^2}{2}}$, we have 
+	\begin{align*}
+	Y & \sim \frac{1}{3}Y^{-2/3}\frac{1}{\sqrt{2\pi}}e^{-\frac{Y^{2/3}}{2}} = \frac{1}{3\sqrt{2\pi}\sqrt[3]{Y^2}}e^{-\frac{Y^{2/3}}{2}}.
+	\end{align*}
+	}
+	%\item $\x =[x_1, x_2]^\top \sim \N(\x|\0, [1, -1/2;1/2,1])$ and $y =3 x_1 + 2x_2$. 
+	\item $\left[\begin{array}{c}X_1 \\ X_2\end{array}\right] \sim \N\big(\left[\begin{array}{c}X_1 \\ X_2\end{array}\right]|\left[\begin{array}{c}0 \\ 0 \end{array}\right], \left[\begin{array}{cc}1 & -1/2 \\ -1/2 & 1\end{array}\right]\big)$ and $\left[\begin{array}{c}Y_1 \\ Y_2\end{array}\right] = \left[\begin{array}{cc}1 & 1/2\\-1/3&1\end{array}\right]\left[\begin{array}{c}X_1 \\ X_2\end{array}\right]$.\\
+	{\blackblue\noindent 
+	We remind that if $\x\sim \N(\boldsymbol{\mu},\boldsymbol{\Sigma})$ and $\y = \A\x +\b$, then $\y\sim \N(\A\boldsymbol{\mu} +\b, \A\boldsymbol{\Sigma}\A^\top).$
+	Therefore, $\left[\begin{array}{c}Y_1 \\ Y_2\end{array}\right]$ has a Gaussian distribution with mean
+	$$\left[\begin{array}{cc}1 & 1/2\\-1/3&1\end{array}\right]\left[\begin{array}{c}0 \\ 0\end{array}\right] = \left[\begin{array}{c}0 \\ 0\end{array}\right]$$
+	and covariance 
+	\begin{align*}
+	\left[\begin{array}{cc}1 & 1/2\\-1/3&1\end{array}\right] \left[\begin{array}{cc}1 & -1/2 \\ -1/2 & 1\end{array}\right]\left[\begin{array}{cc}1 & 1/2\\-1/3&1\end{array}\right]^\top
+	%& = \left[\begin{array}{cc}1 & 1/2\\-1/3&1\end{array}\right] \left[\begin{array}{cc}1 & -1/2 \\ -1/2 & 1\end{array}\right]\left[\begin{array}{cc}1 & -1/3\\1/2&1\end{array}\right]\\
+	%& = \left[\begin{array}{cc}1 & 1/2\\-1/3&1\end{array}\right] \left[\begin{array}{cc}3/4 & -5/6 \\ 0 & 7/6\end{array}\right]\\
+	& = 
+	\left[\begin{array}{cc}3/4 & -1/4\\-1/4&13/9\end{array}\right].
+	\end{align*}
+	In other words, 
+	$$\left[\begin{array}{c}Y_1 \\ Y_2\end{array}\right] \sim \N\left(\left[\begin{array}{c}Y_1 \\ Y_2\end{array}\right]| \left[\begin{array}{c}0 \\ 0\end{array}\right], \left[\begin{array}{cc}3/4 & -1/4\\-1/4&13/9\end{array}\right]\right).$$
+	}
+\end{enumerate}
+
+
+\item~[10 points]  Given two random variables $X$ and $Y$, show that 
+\begin{enumerate}
+\item $\EE(\EE(Y|X)) = \EE(Y)$
+{\blackblue\noindent 
+\begin{align*}
+\EE(\EE(Y|X)) 
+& = \int \EE(Y|X=x)f_X(x)dx \\
+& = \int \left(\int yf_{Y|X}(y|x)dy\right)f_X(x)dx \\
+& = \int \int yf_X(x)f_{Y|X}(y|x)dydx \\
+& = \int \int yf_{X,Y}(x,y)dydx \\
+& = \int y\left(\int f_{X,Y}(x,y)dx\right)dy \\
+& = \int yf_Y(y)dy = \EE(Y) \qquad\qquad \mbox{(we used the fact that $f_Y(y) = \int F_{X,Y}(x,y)dx$)}
+\end{align*}}
+\item
+$\VV(Y) = \EE(\VV(Y|X)) + \VV(\EE(Y|X))$
+
+{\blackblue\noindent 
+\begin{align*}
+\VV(Y) & = \EE(Y^2) - \EE(Y)^2\\\
+& = \EE(\EE(Y^2|X)) - \EE(\EE(Y|X))^2\\
+& = \EE\Big(\EE(Y^2|X)-\EE(Y|X)^2+\EE(Y|X)^2\Big) - \EE(\EE(Y|X))^2\\
+& = \EE(\EE(Y^2|X))-\EE(Y|X)^2) +\EE(\EE(Y|X)^2) - \EE(\EE(Y|X))^2 \qquad \mbox{linearity of expectation} \\
+& =\EE(\VV(Y|X)) + \VV(\EE(Y|X)).
+\end{align*}}
+\end{enumerate}
+
+%\item~[20 points]  Let us go back to the coin tossing example. Suppose we toss a coin for $n$ times, \textit{independently}. Each toss we have $\frac{1}{2}$ chance to obtain the head. Let us denote the total number of heads by $c(n)$. Derive the following statistics. You don't need to give the numerical values. You only need to provide the formula.
+%\begin{enumerate}
+%\item $\EE(c(1))$, $\VV(c(1))$
+%\item $\EE(c(10))$, $\VV(c(10))$
+%\item $\EE(c(n))$, $\VV(c(n))$
+%\end{enumerate} 
+%What can you conclude from comparing the expectations and variances with different choices of $n$?  
+
+\item~[9 points] Given a logistic function, $f(\x) = 1/(1+\exp(-\a^\top \x))$ ($\x$ is a vector),  
+\begin{enumerate}
+\item derive $\frac{\d f(\x)}{\d \x}$\\
+{\blackblue\noindent 
+We know $\frac{\d \sigma}{\d z} = \sigma(z)(1-\sigma(z))$ if $\sigma(z) = 1/(1+\exp(-z))$. 
+Set $z= \a^\top \x$ and note that $f(\x) = \sigma(z)$.
+%\begin{align*}
+%\frac{\d f(\x)}{\d \x} &= \frac{\d z}{\d \x}\frac{\d \sigma}{\d z}\\
+%& = \a\sigma(z)(1-\sigma(z))\\
+%& = f(\x)(1-f(\x))\a 
+%\end{align*}
+\begin{align*}
+\d f(\x)&= \frac{\d \sigma}{\d z}\d z\\
+& = \sigma(z)(1-\sigma(z))\d(\a^\top\x)\\
+& = \sigma(z)(1-\sigma(z))\a^\top\d\x \quad\Longrightarrow {\d f(\x)\over \d\x} = \sigma(z)(1-\sigma(z))\a^\top
+\end{align*}}
+\item derive $\frac{\d^2 f(\x)}{\d \x^2}$, \ie the Hessian matrix\\
+{\blackblue\noindent 
+Set $t(\x) = f(\x)(1-f(\x))$.
+The vector $\a$ is $n\times 1$ and here, we consider $t$ as a $1\times 1$ matrix. 
+Clearly, $\frac{\d f(\x)}{\d \x}  = t(\x)\a^\top$.
+Therefore, 
+\begin{align*}
+\d\left(\frac{\d f(\x)}{\d \x}\right)
+& = \d \left(\a t(\x)\right)\\
+& = \a(\d t(\x))\\
+& = \a f(\x)(1-f(\x))(1-2f(\x))\a^\top\d\x \quad\Longrightarrow \frac{\d^2 f(\x)}{\d \x^2}  =f(\x)(1-f(\x))(1-2f(\x)) \a \a^\top
+\end{align*}
+}
+\item show that $-\log f(\x)$ is convex 
+Note that $0 \le f(\x) \le 1$.\\
+{\blackblue\noindent 
+To prove that $-\log f(\x)$ is convex, we use a result  asserting that a function $g(\x)$ is convex if its Hessian matrix $H(\x)$ is semi-positive for each $x$, i.e, 
+$\frac{\d^2 g(\x)}{\d \x^2} \succeq 0$. 
+\begin{align*}
+\frac{\d }{\d \x} (-\log f(\x)) 
+& = -\frac{1}{f(\x)}\frac{\d f(\x)}{\d \x} = -(1-f(\x))\a \quad\quad\mbox{Using Part (a)}
+\end{align*}
+Therefore, 
+\begin{align*}
+\frac{\d^2 }{\d \x^2} (-\log f(\x)) 
+& = \frac{\d }{\d \x} \Big(\frac{\d }{\d \x} (-\log f(\x))\Big)\\
+& = \frac{\d }{\d \x} \Big(-(1-f(\x))\a \Big)\\
+& = f(\x)(1-f(\x))\a \a^t
+\end{align*}
+Notice $A_{n\times n}$ is semi-positive if and only if for each vector $\z\in\mathbb{R}^n$, we have $z^\top A \z\geq 0$.
+\begin{align*}
+\z^\top \Big(f(\x)(1-f(\x))\a \a^\top\Big) \z
+& = f(\x)(1-f(\x)) \z^\top\a \a ^\top\z\\
+& =  f(\x)(1-f(\x)) \z^\top\a( \z^\top \a )^\top\\
+& = f(\x)(1-f(\x))  (\z^\top\a)^2 \geq 0 \quad\quad \mbox{\red We used $f(\x)(1-f(\x))\geq 0$ as well.}
+\end{align*}
+}
+\end{enumerate}
+\item ~[10 points] Derive the convex conjugate for the following functions
+\begin{enumerate}
+\item $f(x) = -\log(x)$\\
+{\blackblue\noindent 
+By the definition, the convex conjugate of $f(x)$ is 
+$f^*(\lambda) = \displaystyle\max_{x\in (0,\infty)} \left(\lambda x + \log x\right)$. 
+Note that since, for each arbitrary fixed $\lambda\in \mathbb{R}$,  $\lambda x + \log x$ is a strictly concave function, either it takes its maximum in a unique point (can be found by setting its derivative to zero) or its maximum is $+\infty$. 
+When $\lambda \geq 0$, clearly $\displaystyle\max_{x} \left(\lambda x + \log x\right) = \infty$. 
+When $\lambda < 0$, if we set the derivative of $\displaystyle\max_{x\in (0,\infty)} \left(\lambda x + \log x\right)$ to zero, then
+$$\left(\lambda x + \log x\right)' = \lambda + 1/x = 0\quad\quad \Longrightarrow\quad\quad x = -1/\lambda.$$
+Substituting $x = -1/\lambda$, we get 
+$\displaystyle\max_{x\in (0,\infty)} \left(\lambda x + \log x\right) = -(1 + \log(\lambda)).$
+Therefore, 
+$$f^*(\lambda) = \left\{
+\begin{array}{ll}
++\infty & \lambda\geq 0\\
+-(1 + \log(\lambda)) & \lambda< 0
+\end{array}\right.$$
+}
+\item $f(\x) = \x^\top \A^{-1} \x$ where $\A \succ 0$\\
+{\blackblue\noindent 
+By the definition, 
+$$f^*(\y) = \displaystyle\max_{\x\in\mathbb{R}^n} \left(\y^\top \x - \x^\top\A^{-1}\x\right).$$
+Since $\left(\y^\top \x - \x^\top\A^{-1}\x\right)$ is strictly concave, it takes its maximum in a point making its derivative zero. 
+$$\frac{\d}{\d \x} \left(\y^\top \x - \x^\top\A^{-1}\x\right) = \y- 2 \A^{-1}\x = 0 \quad \Longrightarrow \x = \frac{1}{2} \A\y.$$
+Substituting $\x = \frac{1}{2} \A\y$, we get 
+$f^*(\y) =  \frac{1}{4}\y^\top \A\y.$
+}
+\end{enumerate}
+
+\item~[20 points] Derive the (partial) gradient of the following functions. Note that bold small letters represent vectors, bold captial letters matrices, and non-bold letters just scalars.
+\begin{enumerate}
+	\item $f(\x) = \x^\top \A \x$, derive $\frac{\partial f}{\partial \x}$
+	{\blackblue\noindent  
+	\begin{align*}
+	\d f(\x) & = \d \left(\x^\top \A \x\right)\\
+	& = (\d \x)^\top  \A \x + \x^\top \d(\A \x)\\
+	& = (\d \x)^\top  \A \x + \x^\top \A \d \x\\
+	& = \x^\top \A^\top \d \x + \x^\top \A \d \x \quad\quad\mbox{Since $(\d \x)^\top  \A \x$ is scaler, it is equal to its transpose.}\\
+	& =  (\x^\top \A^\top + \x^\top \A) \d \x \quad\Longrightarrow \quad {\red \frac{\partial f}{\partial \x} =   \x^\top (\A + \A^\top)}
+	\end{align*}}
+	\item $f(\x)  = \left(\I + \x\x^\top\right)^{-1} \x$, derive $\frac{\partial f}{\partial \x}$\\
+	{\blackblue \noindent
+	\begin{align*}
+	\d f(\x) & =\d \left(\left(\I + \x\x^\top\right)^{-1} \x\right)\\
+	& = \d \left(\I + \x\x^\top\right)^{-1} \x + \left(\I + \x\x^\top\right)^{-1} \d\x\\
+	& = - \left(\I + \x\x^\top\right)^{-1} \d \left(\I + \x\x^\top\right) \left(\I + \x\x^\top\right)^{-1} \x + \left(\I + \x\x^\top\right)^{-1} \d\x\\
+	& = - \left(\I + \x\x^\top\right)^{-1} \left((\d\x)\x^\top +\x(\d \x)^\top\right) \left(\I + \x\x^\top\right)^{-1} \x + \left(\I + \x\x^\top\right)^{-1} \d\x\\
+	& =  - \left(\I + \x\x^\top\right)^{-1} (\d\x)\underbrace{\red\x^\top  \left(\I + \x\x^\top\right)^{-1} \x}_\text{Scaler} -
+	 \left(\I + \x\x^\top\right)^{-1}  \x\underbrace{{\red(\d \x)^\top \left(\I + \x\x^\top\right)^{-1} \x}}_\text{Scaler}
+	 + \left(\I + \x\x^\top\right)^{-1} \d\x\\
+	& =  - \underbrace{\red\left(\x^\top  \left(\I + \x\x^\top\right)^{-1} \x\right)}_\text{Scaler}\left(\I + \x\x^\top\right)^{-1} (\d\x) -
+	 \left(\I + \x\x^\top\right)^{-1}  \x{\red\x^\top \left(\I + \x\x^\top\right)^{-1} \d \x}
+	 + \left(\I + \x\x^\top\right)^{-1} \d\x\\
+	& =  \left[-\left(\x^\top  \left(\I + \x\x^\top\right)^{-1} \x\right)\left(\I + \x\x^\top\right)^{-1}  -
+	 \left(\I + \x\x^\top\right)^{-1}  \x\x^\top \left(\I + \x\x^\top\right)^{-1} 
+	 + \left(\I + \x\x^\top\right)^{-1}\right] \d\x
+	\end{align*}
+	}
+	\item $f(\alpha) = \log |\K + \alpha \I|$, where $|\cdot|$ means the determinant. Derive $\frac{\partial f}{\partial \alpha}$\\
+	{\blackblue \noindent
+	We know that $\partial(\ln\det{X}) = {\rm tr}(X^{-1}\partial \X)$
+	\begin{align*}
+	\d \log |\K + \alpha \I | & =  {\rm tr}\left((\K + \alpha \I)^{-1}\d (\K + \alpha \I)\right)\\
+	& = {\rm tr}\left((\K + \alpha \I)^{-1}(\d\alpha) \I\right)\\
+	 & = {\rm tr}\left((\K + \alpha \I)^{-1}\right) \d\alpha\qquad \Longrightarrow \qquad \frac{\d  \log |\K + \alpha \I |}{\d \alpha} = {\rm tr}\left((K+\alpha\I)^{-1}\right)
+	\end{align*}
+	}
+	
+	%{\blackblue\noindent 
+	%Using Jacobi's formula, we simply obtain 
+	%\begin{align*}
+	%\frac{\d  \log |\K + \alpha \I |}{\d \alpha} &=  {1\over |\K + \alpha \I |}\frac{\d |\K + \alpha \I |}{\d \alpha}\\
+	%& = {1\over |\K + \alpha \I |}{\rm tr}\left({\rm adj}(\K + \alpha \I )\frac{\d (K+\alpha\I)}{\d\alpha}\right)\\
+	%& = {1\over |\K + \alpha \I |}{\rm tr}\left({\rm adj}(\K + \alpha \I )\I\right)\\
+	%& = {{\rm tr}\left({\rm adj}(\K + \alpha \I )\right)\over |\K + \alpha \I |}\\
+	%& = {{\rm tr}\left({\rm adj}(\K + \alpha \I )\over |\K + \alpha \I |\right)}\\
+	%& = {\rm tr}\left((K+\alpha\I)^{-1}\right).
+	%\end{align*}
+	%}
+	\item $f(\bmu, \bSigma) = \log\big(\N(\a|\A\bmu, \S\bSigma\S^\top)\big)$, derive $\frac{\partial f}{\partial \bmu}$ and $\frac{\partial f}{\partial \bSigma}$,\\
+	{\blackblue\noindent  
+	%From The Matrix Cookboo, we use the two following equalities:
+	%$$\frac{\d |\X|}{\d \X} = |\X|(\X^{-1})^T \quad\quad\&\quad\quad \frac{\d (\a^\top \X^{-1}\b)}{\d\X} = -(\X^{-1})^\top\a\b^\top(\X^{-1})^\top.$$
+	%For simplicity, set $\m =  \A\mu$ and $\bOmega = \S\bSigma\S^\top$. Therefore, 
+	%\begin{align*}
+	%f(\m, \bOmega) = \frac{-1}{2}(\x-\m)^t\bOmega^{-1}(\x-\m) -{1\over 2}\log |\bOmega| +C.
+	%\end{align*}
+	%\begin{align*}
+	%\frac{\d f}{\d \bmu} 
+	%& = \frac{\d \m}{\d \bmu}\frac{\d f}{\d \m}  \\
+	%& = \A\bOmega^{-1}(\x-\m) 
+	%\end{align*}
+	We remind that 
+	$$f(\bmu, \bSigma) = \frac{-1}{2}(\a-\m)^t\bOmega^{-1}(\a-\m) -{1\over 2}\log |\bOmega| +C,$$
+	where   $\m =  \A\mu$ and $\bOmega = \S\bSigma\S^\top$ and $C$ is a constant.
+	\begin{align*}
+	\d f
+	& = \frac{-1}{2}\d(\a-\m)^\top\bOmega^{-1}(\a-\m) + \frac{-1}{2}(\a-\m)^\top\bOmega^{-1}\d(\a-\m) \\
+	& = \frac{-1}{2}\d(\m)^\top\bOmega^{-1}(\a-\m) + \frac{1}{2}(\a-\m)^\top\bOmega^{-1}\d(\m)\\
+	& = \frac{1}{2}(\a-\m)^\top(\bOmega^{-1})^\top\d(\m)+ \frac{1}{2}(\a-\m)^\top\bOmega^{-1}\d(\m) \quad\mbox{\red Since $\d(\m)^\top\bOmega^{-1}(\a-\m)$ is scaler.}\\
+	& = (\a-\m)^\top\bOmega^{-1}\d(\m)\\
+	& = (\a-\m)^\top\bOmega^{-1}\A\d\bmu \quad\Longrightarrow\quad {\red{\d f\over \d\bmu} = (\a-\m)^\top\bOmega^{-1}\A}
+	\end{align*}
+	%Therefore, $${\d f\over \d\bmu} = (\a-\m)^\top\bOmega^{-1}\A.$$
+	\begin{align*}
+	\d f
+	& = -{1\over 2}(\a-\bmu)^\top (\d\bOmega^{-1})(\a-\bmu) -{1\over 2}\d(\log|\bOmega|) \\
+	& =  -{1\over 2}(\a-\bmu)^\top \bOmega^{-1}(\d\bOmega)\bOmega^{-1}(\a-\bmu) -{1\over 2}{\rm tr}(\bOmega^{-1}(\d\bOmega))\\
+	& =  -{1\over 2}(\a-\bmu)^\top \bOmega^{-1}\S(\d\bSigma)\S^\top\bOmega^{-1}(\a-\bmu) - {1\over 2}{\rm tr}(\bOmega^{-1}\S(\d\bSigma)\S^\top)\\
+	& =  -{\rm tr}\left({1\over 2}\S^\top\bOmega^{-1}(\a-\bmu)(\a-\bmu)^\top \bOmega^{-1}\S(\d\bSigma)\right) - {1\over 2}{\rm tr}(\S^\top\bOmega^{-1}\S(\d\bSigma))
+	\end{align*}
+	Therefore, 
+	\begin{align*}
+	{\d f\over \d\bSigma} & = -{1\over 2}\S^\top\bOmega^{-1}(\a-\bmu)(\a-\bmu)^\top \bOmega^{-1}\S - {1\over 2}\S^\top\bOmega^{-1}\S\\
+	& =-{1\over 2}\bSigma^{-1}\S^{-1}(\a-\bmu)(\a-\bmu)^\top (\S^{-1})^\top\bSigma^{-1} -{1\over 2}\bSigma^{-1}
+	\end{align*}
+	}
+	\item $f(\bSigma) = \log\big(\N(\a|\b, \K\otimes \bSigma)\big)$ where $\otimes$ is the Kronecker product 
+	(Hint: check Minka's notes).\\
+	{\blackblue\noindent  
+	Note that 
+	$f(\bSigma) = -\frac{1}{2}(\a-\b)^t\bOmega^{-1}(\a-\b) -{1\over 2}\log |\bOmega| +C,$ where  $\bOmega = \K\otimes \bSigma$ and $C$ is a constant.
+	\begin{align*}
+	\d f
+	& = -{1\over 2}(\a-\bmu)^\top (\d\bOmega^{-1})(\a-\bmu) -{1\over 2}\d\log|\bOmega| \\
+	& =  -{1\over 2}(\a-\bmu)^\top \bOmega^{-1}(\d\bOmega)\bOmega^{-1}(\a-\bmu) -{1\over 2}{\rm tr}(\bOmega^{-1}(\d\bOmega))\\
+	& =  -{1\over 2}{\rm tr}\left((\a-\bmu)^\top \bOmega^{-1}(\K\otimes \d\bSigma)\bOmega^{-1}(\a-\bmu)\right) - {1\over 2}{\rm tr}(\bOmega^{-1}(\K\otimes \d\bSigma)) \quad \mbox{\red Using $\d\bOmega = \K\otimes \d\bSigma$}\\
+	& =  -{1\over 2}{\rm tr}\left(\bOmega^{-1}(\a-\bmu)(\a-\bmu)^\top \bOmega^{-1}(\K\otimes \d\bSigma)\right) - {1\over 2}{\rm tr}(\bOmega^{-1}(\K\otimes \d\bSigma))
+	\end{align*}
+	}
+\end{enumerate}
+\item~[2 points] Given the multivariate Gaussian probability density, $$p(\x|\bmu, \bSigma) = |2\pi \bSigma|^{-\frac{1}{2}}\exp\left(- (\x-\bmu)^\top\bSigma^{-1}(\x-\bmu)\right).$$ Show that the density function achieves the maximum when $\x = \bmu$.  \\
+{\blackblue\noindent 
+Since $\log(\cdot)$ is an increasing function, to make computation easy, we prove that $\log(p(\x|\bmu, \bSigma))$ takes it maximum in $\bmu$. 
+\begin{align*}
+{\d\over \d\x}\left(\log(p(\x|\bmu, \bSigma))\right)
+& ={\d\over \d\x}\left( - (\x-\bmu)^\top\bSigma^{-1}(\x-\bmu) + C\right) \qquad\mbox{$C$ here is a constant}\\
+& = -2\Sigma^{-1}(\x-\bmu) = 0\quad\quad \Longrightarrow x = \bmu
+\end{align*}
+Moreover,  since ${\d^2\over \d\x^2}\left(\log(p(\x|\bmu, \bSigma))\right) = -2\Sigma^{-1} \prec 0$, the function 
+$\log(p(\x|\bmu, \bSigma))$ is a strictly concave function taking its maximum in $x = \bmu$, as desired. 
+}
+\item~[5 points] Show that $$\int \exp(-\frac{1}{2\sigma^2}x^2) \d x = \sqrt{2\pi \sigma^2}.$$ Note that this is about  how the normalization constant of the Gaussian density is obtained. Hint: consider its square and use double integral. \\
+{\blackblue\noindent 
+Set $I= \int \exp(-\frac{1}{2\sigma^2}x^2) \d x$. In the following we prove that $I^2 =  2\pi\sigma^2$.
+\begin{align*}
+I^2 & = (\int_{-\infty}^{\infty} \exp(-\frac{1}{2\sigma^2}x^2) \d x)^2 \\
+& = \left(\int_{-\infty}^{\infty} \exp(-\frac{1}{2\sigma^2}x^2) \d x\right)\left( \int_{-\infty}^{\infty} \exp(-\frac{1}{2\sigma^2}y^2) \d y\right)\\
+& = \int_{-\infty}^{\infty} \int_{-\infty}^{\infty} \exp\left(-\frac{1}{2\sigma^2}(x^2+y^2)\right)\d x\d y\\
+& = \int_{0}^{2\pi} \int_{0}^{\infty} r\exp\left(-\frac{1}{2\sigma^2}r^2\right)\d r\d \theta\\
+& = 2\pi\left[-\sigma^2\exp\left(-\frac{1}{2\sigma^2}r^2\right)\right]_0^\infty = 2\pi\sigma^2 \quad \Longrightarrow\quad I = \sqrt{2\pi \sigma^2}
+\end{align*}
+}
+\item~[5 points] The gamma function is defined as $$\Gamma(x) = \int_0^\infty u^{x-1}e^{-u} \d u.$$ Show that $\Gamma(1) = 1$ and $\Gamma(x+1) = x\Gamma(x)$. Hint: using integral by parts. 
+{\blackblue\noindent 
+\begin{align*}
+\Gamma(1) & =  \int_0^\infty e^{-u} \d u\\
+& = \Big[-e^{-u}\Big]_{0}^{\infty} = 0 - (-1)  = 1.
+\end{align*}
+\begin{align*}
+\Gamma(x+1) & =  \int_0^\infty u^x e^{-u} \d u\quad\quad \mbox{($U= u^x$ and $V' = e^{-u}$)}\\
+& = \Big[-u^xe^{-u}\Big]_0^\infty + \int_0^\infty xu^{x-1} e^{-u} \d u\\
+& = 0 + x\int_0^\infty u^{x-1} e^{-u} \d u = x\Gamma(x).
+\end{align*}
+}
+\item~[2 points] By using Jensen's inequality with $f(x) = \log(x)$, show that for any collection of positive numbers $\{x_1, \ldots, x_N\}$,
+$$\frac{1}{N}\sum_{n=1}^N x_n \ge \left(\prod_{n=1}^N x_n\right)^{\frac{1}{N}}.$$
+{\blackblue\noindent 
+Since $f(x) = -\log(x)$ is convex, using Jensen's inequality, we conclude 
+%$$f\left(\frac{1}{N}\sum_{n=1}^N x_n\right) \leq \frac{1}{N}\sum_{n=1}^N f(x_n)$$
+%or equivalently, 
+\begin{align*}
+-\log\left(\frac{1}{N}\sum_{n=1}^N x_n\right) 
+& \leq \frac{1}{N}\sum_{n=1}^N -\log(x_n)\\
+& = -\log\left(\left(\prod_{n=1}^N x_n\right)^{1/N}\right)
+\end{align*}
+Since $\log(\cdot)$ is an increasing monotonic function, it implies  
+$$\frac{1}{N}\sum_{n=1}^N x_n \ge \left(\prod_{n=1}^N x_n\right)^{\frac{1}{N}}.$$
+}
+\item~[2 points] Given two probability density functions $p(\x)$ and $q(\x)$, show that $$\int p(\x)\log\frac{p(\x)}{q(\x)}\d \x \ge 0.$$
+{\blackblue\noindent 
+Since $f(x) = -\log(x)$ is convex, by Jensen's inequality, we have 
+\begin{align*}
+\int p(\x)\log\frac{p(\x)}{q(\x)}\d \x
+& = \EE_{x\sim p}\left(-\log \frac{q(\x)}{p(\x)}\right)\\
+\mbox{\red (using Jensen's inequality for $-\log(x)$)}\quad & \geq -\log\left(\EE_{x\sim p}\left(\frac{q(\x)}{p(\x)}\right)\right)\\
+& = -\log\left(\int p(x)\left(\frac{q(\x)}{p(\x)}\right)\d x\right)\\
+& = -\log\left(\int q(\x)\d x\right) = -\log 1 = 0.
+\end{align*}
+}
+\item~[\textbf{Bonus}][5 points] Show that for any square matrix $\X \succ 0$, $\log\det\X$ is concave to $\X$. 
+\end{enumerate}
+{\blackblue\noindent Consider $\X$ as a vector in $\mathbb{R}^{2n}$ whose coordinates are indexed by ${ij}\in[n]\times [n]$. 
+We know that $\frac{\d \log|\X|}{\d \X} = X^{-1}$ and consequently, 
+$$\frac{\d^2 \log|\X|}{\d \X^2}  =\frac{\d \X^{-1}}{\d \X}.$$
+By the Matrix Cookboo, 
+$$\frac{\d (\X^{-1})_{kl}}{\d (\X)_{ij}} = -(X^{-1})_{ki}(X^{-1})_{jl}.$$
+If we consider $\log(|\X|)$ as a function from $\mathbb{R}^{n^2}\longrightarrow \mathbb{R}$, then 
+$L = \frac{\d^2 \log|\X|}{\d \X^2}$  is a $n^2\times n^2$ matrix whose rows and columns are indexed  by ${ij}\in[n]\times [n]$. 
+In what follows, we prove that this matrix is semi-negative definite. Consider $\Z\in \mathbb{R}^{n^2}$, as a vector, such that its entries are indexed by indices  ${ij}\in[n]\times [n]$. To fulfill the proof, 
+\begin{align*}
+\Z^\top L\Z & = \sum_{kl}\sum_{ij}\Z_{kl}L_{kl,ij}\Z_{ij}\\
+& = -\sum_{kl}\sum_{ij}\Z_{kl}(\X^{-1})_{ki}(\X^{-1})_{jl}\Z_{ij}\\
+& = - \sum_{i}\sum_{l}\left(\sum_{j}(\X^{-1})_{jl}\Z_{ij}\right)\left(\sum_{k}\Z_{kl}(\X^{-1})_{ki}\right)\\
+& = - \sum_{i}\sum_{l} (\Z\X^{-1})_{il}\left((\X^{-1})^\top\Z\right)_{il}\quad \mbox{\red Hereafter, we see $\X$ and $\Z$ as Matrices!}\\
+& = - \sum_{i}\sum_{l} (\X^{-1}\Z)_{il}^2 \leq 0 \quad\quad \mbox{since $\X$ is symmetric.}
+\end{align*}
+}
+
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
